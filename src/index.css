@@ -12,6 +12,12 @@ code {
     monospace;
 }
 
+.html{
+  font-size: 12px;
+}
+
 :root {
-  --xl: 12rem;
+
+  --nav-height : 50px;
+  --maxwidth-full: 100%;
 }

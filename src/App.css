@@ -1,0 +1,7 @@
+.global-wrapper {
+  width: --var(--maxwidth-full);
+}
+
+.app {
+  width: 100%;
+}
