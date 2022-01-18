@@ -1,7 +1,17 @@
 .global-wrapper {
-  width: --var(--maxwidth-full);
+  width: var(--maxwidth-full);
+  margin-top: var(--nav-height);
 }
 
 .app {
   width: 100%;
+}
+
+/* media query */
+
+@media screen and (max-width: 990px) {
+  /* navbar 두줄로 변경 시 */
+  .global-wrapper {
+    margin-top: calc(var(--nav-height) * 2);
+  }
 }
