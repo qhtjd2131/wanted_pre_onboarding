@@ -1,13 +1,18 @@
 .gnb-wrapper {
   display: flex;
   align-items: center;
-  justify-content: space-around;
+  /* justify-content: space-around; */
+  justify-content: space-between;
   height: var(--nav-height);
   border-bottom: 1px solid #e5e5e5;
+
+  box-sizing: border-box;
+  flex-wrap: wrap;
 }
 
 /* LOGO */
 .logo-wrapper {
+  height: var(--nav-height);
   display: flex;
   align-items: center;
   padding: 0px 10px;
@@ -27,6 +32,7 @@
 
 /* NavItem */
 .navitem-wrapper {
+  height: var(--nav-height);
   flex: 1;
   display: flex;
   align-items: center;
@@ -62,12 +68,18 @@
   left: 0;
 }
 
+/* title : 홈 */
+.item-box-index-0 {
+  display: none;
+}
+
 .nav-item {
   font-weight: 600;
 }
 
 /* UserMenu */
 .usermenu-wrapper {
+  height: var(--nav-height);
   display: flex;
   align-items: center;
 }
@@ -80,6 +92,10 @@ img {
 
 .usermenu-wrapper > img {
   border-radius: 50%;
+}
+
+.threedots-icon {
+  display: none;
 }
 
 /* CompanyService */
@@ -100,6 +116,7 @@ img {
 .cs-button > p {
   padding: 0;
   margin: 0;
+  white-space: nowrap;
 }
 .cs-wrapper::before {
   content: "";
@@ -110,10 +127,72 @@ img {
 }
 
 /* media query */
-
+/* nav bar */
 @media screen and (max-width: 1100px) {
-   .nav-item-box{
-       font-weight: 500;
-       font-size : 14px;
-   }
+  .nav-item-box {
+    font-weight: 500;
+    font-size: 14px;
+  }
+}
+
+@media screen and (max-width: 990px) {
+  /* navbar 두 줄로 변경 */
+  .gnb-wrapper {
+    height: var(--nav-height) * 2;
+  }
+  .logo-wrapper {
+    width: 100%;
+  }
+  .navitem-wrapper {
+    max-width: 600px;
+  }
+
+  /* nav-item hover 효과 제거 */
+  .nav-item-box:hover::after {
+    display : none;
+  }
+
+  /* user-menu 줄이기 */
+  .threedots-icon {
+    display: block;
+  }
+  .usermenu-wrapper > img {
+    display: none;
+  }
+  /* company service display none */
+  .cs-wrapper {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 764px) {
+  /* nav item 변경 (홈, 채용, 이벤트) */
+  .nav-item-box {
+    display: none;
+  }
+  .item-box-index-0,
+  .item-box-index-1,
+  .item-box-index-2 {
+    display: block;
+  }
+  .navitem-wrapper {
+    max-width: 160px;
+    padding : 0;
+    margin : 0;
+    padding-left : 10px;
+
+  }
+  .logo-wrapper{
+      margin : 0;
+      padding:0;
+  }
+  .logo-wrapper .menu{
+      margin : 0;
+      padding : 0;
+      padding-left : 10px;
+  }
+  .nav-item{
+      font-size : 18px;
+      font-weight: 700;
+  }
 }

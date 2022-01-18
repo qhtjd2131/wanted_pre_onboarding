@@ -2,10 +2,12 @@ import React from "react";
 import "./GlobalNavBar.css";
 import { ReactComponent as SearchIcon } from "../images/icon-search.svg";
 import { ReactComponent as AlramIcon } from "../images/icon-alram.svg";
+import { ReactComponent as ThreeDotsIcon } from "../images/icon-3dots.svg";
 import profile from "../images/profile.jpg";
 import menu_icon from "../images/icon-menu.png";
 
 const navItemTitle = [
+  "홈",
   "채용",
   "이벤트",
   "직군별 연봉",
@@ -36,8 +38,8 @@ const NavItems = () => {
 
 const NavItem = () => {
   return navItemTitle.map((title, index) => (
-    <li className="nav-item-box" key={index}>
-      <div className="nav-item">{title}</div>
+    <li className={"nav-item-box "+"item-box-index-"+index} key={index}>
+      <div className={"nav-item"}>{title}</div>
     </li>
   ));
 };
@@ -51,6 +53,9 @@ const UserMenu = () => {
 
       <div className="alram-icon">
         <AlramIcon />
+      </div>
+      <div className="threedots-icon">
+        <ThreeDotsIcon />
       </div>
       <img src={profile} alt="profile" width="28px" height="28px" />
     </div>
