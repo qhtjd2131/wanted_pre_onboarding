@@ -1,4 +1,10 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import "./Carousel.css";
 import image_0 from "../images/0.jpg";
 import image_1 from "../images/1.jpg";
@@ -10,6 +16,7 @@ import image_6 from "../images/6.jpg";
 import image_7 from "../images/7.jpg";
 import image_8 from "../images/8.jpg";
 
+// data
 const carousel_data = {
   0: {
     src: image_0,
@@ -58,14 +65,19 @@ const carousel_data = {
   },
 };
 
-const Information = ({ title, subTitle }) => {
+// Child Components
+const Information = ({ title, subTitle, isCenter }) => {
   return (
-    <div className="information-box">
+    <div
+      className={
+        "information-box " + (isCenter ? "information-box-center" : "")
+      }
+    >
       <div className="info-title">{title}</div>
       <div className="info-subtitle">{subTitle}</div>
       <div className="info-line"></div>
       <div className="info-link">
-        <a src=""> 바로가기 </a>
+        <a src=""> {"바로가기 >"} </a>
       </div>
     </div>
   );
@@ -78,6 +90,7 @@ const LeftButton = ({ ClickHandler }) => {
     </div>
   );
 };
+
 const RightButton = ({ ClickHandler }) => {
   return (
     <div className="button-wrapper button-right">
@@ -86,52 +99,133 @@ const RightButton = ({ ClickHandler }) => {
   );
 };
 
+/* ----------------------------------------------------*/
+
+//Main Component (Carousel)
 const Carousel = () => {
   const [positionState, setPositionState] = useState({
-    prev: -1,
     current: 0,
-    next: 1,
   });
+  const [isSliding, setIsSliding] = useState(false);
+  const [slideDirection, setSlideDirection] = useState("none");
+  const [pointerOnSlider, setPointerOnSlider] = useState(false);
   const sliderRef = useRef();
+
   const CAROUSEL_DATA_LENGTH = Object.keys(carousel_data).length;
 
-  const LeftButtonClickHandler = () => {
-    sliderRef.current.style =
-      "transform : translateX(88%); transition: transform 0.4s";
-    sliderRef.current.addEventListener(
-      "webkitTransitionEnd",
-      () => {
-        setPositionState({
-          prev: calculateIndex(positionState.prev - 1),
-          current: calculateIndex(positionState.current - 1),
-          next: calculateIndex(positionState.next - 1),
-        });
-        sliderRef.current.style = "transform : translateX(0%); ";
-      },
-      false
-    );
-  };
+  let timer = null;
 
-  const RightButtonClickHandler = () => {
+  //오른쪽 슬라이딩 효과 끝나고 실행되는 callback function
+  const transitionEndRightCallBack = useCallback(() => {
+    setPositionState((positionState) => ({
+      current: calculateIndex(positionState.current + 1),
+    }));
+    sliderRef.current.style = "transform : translateX(0%);";
+    setIsSliding(false);
+  }, []);
+
+  //왼쪽 슬라이딩 효과 끝나고 실행되는 callback function
+  const transitionEndLeftCallBack = useCallback(() => {
+    setPositionState((positionState) => ({
+      current: calculateIndex(positionState.current - 1),
+    }));
+    sliderRef.current.style = "transform : translateX(0%);";
+    setIsSliding(false);
+  }, []);
+
+  //왼쪽 버튼 클릭 핸들러
+  const leftButtonClickHandler = useCallback(() => {
+    clearTimeout(timer);
+
+    if (!isSliding) {
+      setSlideDirection("left");
+      setIsSliding(true);
+      sliderRef.current.style =
+        "transform : translateX(88%); transition: transform 0.4s";
+    }
+  }, []);
+
+  //오른쪽 버튼 클릭 핸들러
+  const rightButtonClickHandler = useCallback(() => {
+    clearTimeout(timer);
+
+    if (!isSliding) {
+      setSlideDirection("right");
+      setIsSliding(true);
+      sliderRef.current.style =
+        "transform : translateX(-88%); transition:0.4s ";
+    }
+  }, []);
+
+  // 자동 슬라이더 동작의 한 tick (오른쪽으로 슬라이딩)
+  const stepForward = () => {
+    setSlideDirection("right");
+    setIsSliding(true);
     sliderRef.current.style = "transform : translateX(-88%); transition:0.4s ";
-    sliderRef.current.addEventListener(
-      "webkitTransitionEnd",
-      () => {
-        setPositionState({
-          prev: calculateIndex(positionState.prev + 1),
-          current: calculateIndex(positionState.current + 1),
-          next: calculateIndex(positionState.next + 1),
-        });
-        sliderRef.current.style = "transform : translateX(0%);";
-      },
-      false
-    );
   };
 
-  useLayoutEffect(() => {
-    //effect
-  }, [positionState]);
+  // 타이머 on 하고, 자동 슬라이더 동작 함수 연결
+  const activateTimer = () => {
+    timer = setTimeout(() => {
+      stepForward();
+    }, 2000);
+  };
 
+  //transition end event 처리 useEffect
+  useEffect(() => {
+    console.log("useeffect");
+    if (slideDirection === "left") {
+      sliderRef.current.addEventListener(
+        "webkitTransitionEnd",
+        transitionEndLeftCallBack,
+        false
+      );
+    } else if (slideDirection === "right") {
+      sliderRef.current.addEventListener(
+        "webkitTransitionEnd",
+        transitionEndRightCallBack,
+        false
+      );
+    }
+
+    return () => {
+      sliderRef.current.removeEventListener(
+        "webkitTransitionEnd",
+        transitionEndRightCallBack,
+        false
+      );
+      sliderRef.current.removeEventListener(
+        "webkitTransitionEnd",
+        transitionEndLeftCallBack,
+        false
+      );
+    };
+  }, [slideDirection]);
+
+  //timer 실행 및 처리 useEffect
+  useEffect(() => {
+    if (!pointerOnSlider) {
+      activateTimer();
+    }
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [positionState, pointerOnSlider]);
+
+
+  //마우스 포인터가 캐러셀 위에 있는경우 자동슬라이드 x, 
+  // 캐러셀 밖에있는경우 다시 자동슬라이드 o
+  const mouseEnterHandler = useCallback(() => {
+    setPointerOnSlider(true);
+  }, []);
+
+  const mouseLeaveHandler = useCallback(() => {
+    setPointerOnSlider(false);
+  }, []);
+
+
+  // 범위를 벗어난 index 계산 함수
   const calculateIndex = (index) => {
     let calculated_index = 0;
 
@@ -144,11 +238,21 @@ const Carousel = () => {
     }
     return calculated_index;
   };
+
   return (
     <section className="carousel-wrapper">
-      <LeftButton ClickHandler={LeftButtonClickHandler} />
-      <RightButton ClickHandler={RightButtonClickHandler} />
-      <div className="slide-wrapper" ref={sliderRef}>
+      <LeftButton ClickHandler={leftButtonClickHandler} />
+      <RightButton ClickHandler={rightButtonClickHandler} />
+      <div
+        className="slide-wrapper"
+        ref={sliderRef}
+        onMouseEnter={() => {
+          mouseEnterHandler();
+        }}
+        onMouseLeave={() => {
+          mouseLeaveHandler();
+        }}
+      >
         {/* 슬라이드 효과를 위한 마지막 이미지 2개 */}
         {Object.keys(carousel_data)
           .reverse()
@@ -173,13 +277,18 @@ const Carousel = () => {
         {/* 전체 이미지 */}
         {Object.keys(carousel_data).map((i, index) => {
           const item_index = calculateIndex(positionState.current + index);
-
           return (
-            <div className="slide-item-box" key={index}>
+            <div
+              className={
+                "slide-item-box " + (index === 0 ? "center-item-box" : "")
+              }
+              key={index}
+            >
               <img src={carousel_data[item_index].src} alt={"img" + index} />
               <Information
                 title={carousel_data[item_index].title}
                 subTitle={carousel_data[item_index].subTitle}
+                isCenter={index === 0 ? true : false}
               />
             </div>
           );
