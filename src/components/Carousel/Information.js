@@ -11,7 +11,7 @@ const Information = ({ title, subTitle, isCenter }) => {
         <div className="info-subtitle">{subTitle}</div>
         <div className="info-line"></div>
         <div className="info-link">
-          <a src=""> {"바로가기 >"} </a>
+           {"바로가기 >"}
         </div>
       </div>
     );

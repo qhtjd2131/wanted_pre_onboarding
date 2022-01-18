@@ -38,7 +38,7 @@ const NavItems = () => {
 
 const NavItem = () => {
   return navItemTitle.map((title, index) => (
-    <li className={"nav-item-box "+"item-box-index-"+index} key={index}>
+    <li className={`nav-item-box item-box-index-${index}`} key={index}>
       <div className={"nav-item"}>{title}</div>
     </li>
   ));

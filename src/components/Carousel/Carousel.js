@@ -19,47 +19,46 @@ const Carousel = () => {
   //하나의 슬라이드 너비 : 88%, Carousel.css 파일과 동기화 필요.
   const CAROUSEL_SLIDE_WIDTH = "88%";
 
-  let timer = null;
+  let timer = useRef(null);
 
-  //오른쪽 슬라이딩 효과 끝나고 실행되는 callback function
-  const transitionEndRightCallBack = useCallback(() => {
-    setPositionState((positionState) => ({
-      current: calculateIndex(positionState.current + 1),
-    }));
-    sliderRef.current.style = "transform : translateX(0%);";
-    setIsSliding(false);
-  }, []);
+  // 범위를 벗어난 index 계산 함수
+  const calculateIndex = useCallback(
+    (index) => {
+      let calculated_index = 0;
 
-  //왼쪽 슬라이딩 효과 끝나고 실행되는 callback function
-  const transitionEndLeftCallBack = useCallback(() => {
-    setPositionState((positionState) => ({
-      current: calculateIndex(positionState.current - 1),
-    }));
-    sliderRef.current.style = "transform : translateX(0%);";
-    setIsSliding(false);
-  }, []);
+      if (index > CAROUSEL_DATA_LENGTH - 1) {
+        calculated_index = index - CAROUSEL_DATA_LENGTH;
+      } else if (index < 0) {
+        calculated_index = CAROUSEL_DATA_LENGTH + index;
+      } else {
+        calculated_index = index;
+      }
+      return calculated_index;
+    },
+    [CAROUSEL_DATA_LENGTH]
+  );
 
   //왼쪽 버튼 클릭 핸들러
   const leftButtonClickHandler = useCallback(() => {
-    clearTimeout(timer);
+    clearTimeout(timer.current);
 
     if (!isSliding) {
       setSlideDirection("left");
       setIsSliding(true);
       sliderRef.current.style = `transform : translateX(${CAROUSEL_SLIDE_WIDTH}); transition: transform 0.4s`;
     }
-  }, []);
+  }, [isSliding]);
 
   //오른쪽 버튼 클릭 핸들러
   const rightButtonClickHandler = useCallback(() => {
-    clearTimeout(timer);
+    clearTimeout(timer.current);
 
     if (!isSliding) {
       setSlideDirection("right");
       setIsSliding(true);
       sliderRef.current.style = `transform : translateX(-${CAROUSEL_SLIDE_WIDTH}); transition:0.4s`;
     }
-  }, []);
+  }, [isSliding]);
 
   // 자동 슬라이더 동작의 한 tick (오른쪽으로 슬라이딩)
   const stepForward = () => {
@@ -69,22 +68,41 @@ const Carousel = () => {
   };
 
   // 타이머 on 하고, 자동 슬라이더 동작 함수 연결
-  const activateTimer = () => {
-    timer = setTimeout(() => {
+  const activateTimer = useCallback(() => {
+    timer.current = setTimeout(() => {
       stepForward();
     }, 2000);
-  };
+  }, []);
 
   //transition end event 처리 useEffect
   useEffect(() => {
+    let tempRef = sliderRef.current;
+
+    //오른쪽 슬라이딩 효과 끝나고 실행되는 callback function
+    const transitionEndRightCallBack = () => {
+      setPositionState((positionState) => ({
+        current: calculateIndex(positionState.current + 1),
+      }));
+      tempRef.style = "transform : translateX(0%);";
+      setIsSliding(false);
+    };
+
+    //왼쪽 슬라이딩 효과 끝나고 실행되는 callback function
+    const transitionEndLeftCallBack = () => {
+      setPositionState((positionState) => ({
+        current: calculateIndex(positionState.current - 1),
+      }));
+      tempRef.style = "transform : translateX(0%);";
+      setIsSliding(false);
+    };
     if (slideDirection === "left") {
-      sliderRef.current.addEventListener(
+      tempRef.addEventListener(
         "webkitTransitionEnd",
         transitionEndLeftCallBack,
         false
       );
     } else if (slideDirection === "right") {
-      sliderRef.current.addEventListener(
+      tempRef.addEventListener(
         "webkitTransitionEnd",
         transitionEndRightCallBack,
         false
@@ -92,18 +110,18 @@ const Carousel = () => {
     }
 
     return () => {
-      sliderRef.current.removeEventListener(
+      tempRef.removeEventListener(
         "webkitTransitionEnd",
         transitionEndRightCallBack,
         false
       );
-      sliderRef.current.removeEventListener(
+      tempRef.removeEventListener(
         "webkitTransitionEnd",
         transitionEndLeftCallBack,
         false
       );
     };
-  }, [slideDirection]);
+  }, [slideDirection, calculateIndex]);
 
   //timer 실행 및 처리 useEffect
   useEffect(() => {
@@ -112,9 +130,9 @@ const Carousel = () => {
     }
 
     return () => {
-      clearTimeout(timer);
+      clearTimeout(timer.current);
     };
-  }, [positionState, pointerOnSlider]);
+  }, [positionState, pointerOnSlider, activateTimer]);
 
   //마우스 포인터가 캐러셀 위에 있는경우 자동슬라이드 x,
   // 캐러셀 밖에있는경우 다시 자동슬라이드 o
@@ -125,20 +143,6 @@ const Carousel = () => {
   const mouseLeaveHandler = useCallback(() => {
     setPointerOnSlider(false);
   }, []);
-
-  // 범위를 벗어난 index 계산 함수
-  const calculateIndex = (index) => {
-    let calculated_index = 0;
-
-    if (index > CAROUSEL_DATA_LENGTH - 1) {
-      calculated_index = index - CAROUSEL_DATA_LENGTH;
-    } else if (index < 0) {
-      calculated_index = CAROUSEL_DATA_LENGTH + index;
-    } else {
-      calculated_index = index;
-    }
-    return calculated_index;
-  };
 
   return (
     <section className="carousel-wrapper">
