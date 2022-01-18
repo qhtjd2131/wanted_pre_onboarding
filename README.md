@@ -1,7 +1,9 @@
 
 ## wantedPreOnBoarding 선발과제
 
-배포 링크 : 
+배포 링크 : https://fervent-boyd-e4b28a.netlify.app/
+
+---
 
 
 ### 캐러셀 동작원리
